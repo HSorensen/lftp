@@ -838,6 +838,84 @@ FileInfo *ParseFtpLongList_MLSD(char *line,int *err,const char *)
    return fi;
 }
 
+static
+FileInfo *ParseFtpLongList_MVS_DATASET(char *line,int *err,const char *tz)
+{ // Line is >Volume Unit    Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+   if(!strncasecmp(line,"Volume Unit ",12))
+      return 0;	  // MVS dataset list header found
+
+   FileInfo *fi=FileInfo::parse_ls_line(line,tz);
+   if(!fi)
+   {
+      (*err)++;
+      return 0;
+   }
+   return fi;
+
+	/*
+	 *       00000000001111111111222222222233333333334444444444555555555566666666667
+	 *       01234567890123456789012345678901234567890123456789012345678901234567890
+	 *       ------ ------ ---------- -- ---- ----- ----- ----- ---- --------
+	 *      >Volume Unit    Referred Ext Used Recfm Lrecl BlkSz Dsorg Dsname
+	 * FILE:>SMSS91 3390   2018/09/26  1   15  U    19069 19069  PO  CACOMP03<
+	 * FILE:>Pseudo Directory                                        ATTSRCE<
+	 * FILE:>Migrated                                                BBSDEF<
+	 * FILE:>SMSS91 3390   2018/09/26  1   15  U    19069 19069  PO  CACOMP03<
+	 * FILE:>ISB002 3390   2018/09/27  1   45  VB     255  1680  PO  CLIST<
+	 * FILE:>                                                   VSAM TRANMWH<
+	 * FILE:>ISB006 3390                                        VSAM DATA<
+	 * FILE:>ISB006 3390                                        VSAM INDEX<
+	 */
+//	    char *dsVolume = malloc( 6); ftpRawListing.substring( 0,  6).trim();
+//	    char *dsUnit   = malloc( 6); ftpRawListing.substring( 7, 13).trim();
+//	    char *dsRefdate= malloc(10); ftpRawListing.substring(14, 24).trim();
+//	    char *dsExt    = malloc( 3); ftpRawListing.substring(24, 27).trim(); // note start adjacent to refdate
+//	    char *dsUsed   = malloc( 4); ftpRawListing.substring(28, 32).trim();
+//	    char *dsRecfm  = malloc( 5); ftpRawListing.substring(33, 38).trim();
+//	    char *dsLrecl  = malloc( 5); ftpRawListing.substring(39, 44).trim();
+//	    char *dsBlksz  = malloc( 4); ftpRawListing.substring(45, 49).trim();
+//	    char *dsOrg    = malloc( 4); ftpRawListing.substring(51, 55).trim();
+//	    char *dsName   = malloc( 8); ftpRawListing.substring(56).trim();
+//
+//	    int line_len=strlen(line);
+//	    char *line=string_alloca(line_len+1);
+//	    memcpy(line,line_c,line_len);
+}
+
+static
+FileInfo *ParseFtpLongList_MVS_MEMBER(char *line,int *err,const char *tz)
+{ // Line is > Name     VV.MM   Created       Changed      Size  Init   Mod   Id
+
+	/*
+	 *       00000000001111111111222222222233333333334444444444555555555566666666667
+	 *       01234567890123456789012345678901234567890123456789012345678901234567890
+	 *       -------- ------ ---------- ---------------- ----- ----- ----- --------
+	 *      > Name     VV.MM   Created       Changed      Size  Init   Mod   Id
+	 * FILE:>ACFUSID   01.02 1997/07/02 1997/07/03 10:37   150    74     0 SPO01   <
+	 * FILE:>ATHOME    01.17 1990/10/01 2014/03/13 07:35   239   178     0 SPO01   <
+	 */
+//		mbrName    = ftpRawListing.substring( 0,  8).trim();
+//		mbrVvmm    = ftpRawListing.substring( 9, 15).trim();
+//		mbrCreated = ftpRawListing.substring(16, 26).trim();
+//		mbrChanged = ftpRawListing.substring(27, 33).trim();
+//		mbrSize    = ftpRawListing.substring(44, 49).trim();
+//		mbrInit    = ftpRawListing.substring(50, 55).trim();
+//		mbrMod     = ftpRawListing.substring(56, 61).trim();
+//		mbrId      = ftpRawListing.substring(62).trim();
+
+   if(!strncasecmp(line," Name     VV.MM ",16))
+      return 0;	  // MVS member list header found
+
+   FileInfo *fi=FileInfo::parse_ls_line(line,tz);
+   if(!fi)
+   {
+      (*err)++;
+      return 0;
+   }
+   return fi;
+}
+
+
 Ftp::FtpLineParser Ftp::line_parsers[number_of_parsers]={
    ParseFtpLongList_UNIX,
    ParseFtpLongList_NT,
@@ -846,4 +924,6 @@ Ftp::FtpLineParser Ftp::line_parsers[number_of_parsers]={
    ParseFtpLongList_AS400,
    ParseFtpLongList_OS2,
    ParseFtpLongList_MacWebStar,
+   ParseFtpLongList_MVS_DATASET,
+   ParseFtpLongList_MVS_MEMBER,
 };
